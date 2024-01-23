@@ -4,7 +4,8 @@
   "description": "",
   "scripts": {
     "build": "tsc",
-    "test": "cucumber-js --profile default"
+    "test": "cucumber-js --profile default",
+    "test-critical": "cucumber-js --profile critical"
   },
   "devDependencies": {
     "@cucumber/cucumber": "10.3.1",
@@ -13,5 +14,11 @@
     "cross-env": "^7.0.3",
     "ts-node": "10.9.2",
     "typescript": "^5.3.3"
+  },
+  "dependencies": {
+    "@typegoose/typegoose": "^12.1.0",
+    "dotenv": "^16.3.2",
+    "mongodb": "^6.3.0",
+    "mongoose": "^8.1.0"
   }
 }

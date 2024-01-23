@@ -2,20 +2,28 @@ import {Before, Given, Then, When} from "@cucumber/cucumber";
 import {Localization} from "../../src/Domain/ValueObjects/Localization";
 import {VehicleLocalizationCommandHandler} from "../../src/App/Commands/Handlers/VehicleLocalizationCommandHandler";
 import {VehicleLocalizationCommand} from "../../src/App/Commands/Dtos/VehicleLocalizationCommand";
-import {fleetId, fleetRepository, vehicle, vehicleRepository} from "./common_steps";
+import {
+    fleetId,
+    inMemoryFleetRepository,
+    vehicle,
+    inMemoryVehicleRepository,
+    mongoDBFleetRepository, mongoDBVehicleRepository, mongoDBFleetId
+} from "./common_steps";
 import {VehicleQueryHandler} from "../../src/App/Queries/Handlers/VehicleQueryHandler";
 import {VehicleQuery} from "../../src/App/Queries/Dtos/VehicleQuery";
 import * as assert from "assert";
 import {VehicleLocalizationFailure, VehicleLocalizationResult} from "../../src/App/Commands/Events/VehicleLocalizationResult";
 
 let location: Localization
-let vehicleLocalizationCommandHandler: VehicleLocalizationCommandHandler
-let vehicleQueryHandler: VehicleQueryHandler
+let inMemoryVehicleLocalizationCommandHandler: VehicleLocalizationCommandHandler
+let mongoDBVehicleLocalizationCommandHandler: VehicleLocalizationCommandHandler
+let mongoDBVehicleQueryHandler: VehicleQueryHandler
 let vehicleLocalizationResult: VehicleLocalizationResult
 
 Before(function() {
-    vehicleLocalizationCommandHandler = new VehicleLocalizationCommandHandler(vehicleRepository, fleetRepository)
-    vehicleQueryHandler = new VehicleQueryHandler(fleetRepository, vehicleRepository)
+    inMemoryVehicleLocalizationCommandHandler = new VehicleLocalizationCommandHandler(inMemoryVehicleRepository, inMemoryFleetRepository)
+    mongoDBVehicleLocalizationCommandHandler = new VehicleLocalizationCommandHandler(mongoDBVehicleRepository, mongoDBFleetRepository)
+    mongoDBVehicleQueryHandler = new VehicleQueryHandler(mongoDBFleetRepository, mongoDBVehicleRepository)
 })
 
 Given('a location', function () {
@@ -23,24 +31,24 @@ Given('a location', function () {
 });
 
 When('I park my vehicle at this location', async function () {
-    const vehicleLocalizationCommand = new VehicleLocalizationCommand(fleetId, vehicle.getPlateNumber(), location)
-    await vehicleLocalizationCommandHandler.handle(vehicleLocalizationCommand)
+    await mongoDBVehicleLocalizationCommandHandler.handle(new VehicleLocalizationCommand(mongoDBFleetId, vehicle.getPlateNumber(), location))
+    await inMemoryVehicleLocalizationCommandHandler.handle(new VehicleLocalizationCommand(fleetId, vehicle.getPlateNumber(), location))
 });
 
 Then('the known location of my vehicle should verify this location', async function () {
-    const vehicleQuery = new VehicleQuery(fleetId, vehicle.getPlateNumber())
-    const savedVehicle = await vehicleQueryHandler.query(vehicleQuery)
+    const vehicleQuery = new VehicleQuery(mongoDBFleetId, vehicle.getPlateNumber())
+    const savedVehicle = await mongoDBVehicleQueryHandler.query(vehicleQuery)
     assert.equal(savedVehicle?.isLocalizationAlreadyExist(location), true)
 });
 
 Given('my vehicle has been parked into this location', async function () {
     const vehicleLocalizationCommand = new VehicleLocalizationCommand(fleetId, vehicle.getPlateNumber(), location)
-    await vehicleLocalizationCommandHandler.handle(vehicleLocalizationCommand)
+    await inMemoryVehicleLocalizationCommandHandler.handle(vehicleLocalizationCommand)
 });
 
 When('I try to park my vehicle at this location', async function () {
     const vehicleLocalizationCommand = new VehicleLocalizationCommand(fleetId, vehicle.getPlateNumber(), location)
-    vehicleLocalizationResult = await vehicleLocalizationCommandHandler.handle(vehicleLocalizationCommand)
+    vehicleLocalizationResult = await inMemoryVehicleLocalizationCommandHandler.handle(vehicleLocalizationCommand)
 });
 
 Then('I should be informed that my vehicle is already parked at this location', function () {
