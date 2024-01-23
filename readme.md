@@ -9,13 +9,18 @@ First of all, in main branch, enter in your terminal:
 yarn install
 ```
 
-For the branch step_one, after pulling the project, you can run the tests with the following command:
+For the branch step_one, you can run the tests with the following command:
 ```shell
+git fetch
+git checkout step_one
 yarn test
 ```
 
 For the step_two branch, in order to use the MongoDB database,
 please do the following:
+```shell
+git checkout step_two
+```
 
 1. If you want to use the database contained in the docker-compose.yml,
    create a .env file at the root level of the project containing the following
@@ -49,6 +54,14 @@ The CLI accepts the following commands:
 ./fleet park-vehicle <fleetId> <vehiclePlateNumber> <lat> <lng>  #Park a vehicle
 ./fleet localize-vehicle <fleetId> <vehiclePlateNumber>          #Localize a vehicle in a fleet
 ```
+
+5. In order to run the tests, you can:
+```shell
+yarn test          # runs all the tests
+yarn test-critical # runs only critical tests
+```
+_NB: Datas won't persist in database once all the tests are completed._
+
 
 #### Step 3 answers
 _**For code quality, you can use some tools : which one and why (in a few words) ?**_
